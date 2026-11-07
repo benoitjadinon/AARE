@@ -116,6 +116,11 @@
     <string name="setup_choice_style">Style</string>
     <string name="setup_style_android_auto">Android Auto</string>
     <string name="setup_style_carplay">CarPlay</string>
+    <string name="setup_choice_touch_mapping">Touch alignment</string>
+    <string name="setup_choice_touch_auto">Auto</string>
+    <string name="setup_choice_touch_panel">Panel size</string>
+    <string name="setup_choice_touch_screen">Screen area</string>
+    <string name="setup_hint_touch_mapping">If taps land above or below the buttons, choose \"Screen area\".</string>
     <string name="setup_switch_dark_bar">Dark bar, even with day colors</string>
     <string name="setup_switch_passenger">Passenger mode: no driving restrictions (the driver must not use the screen)</string>
     <string name="setup_switch_message_notifications">Message notifications</string>

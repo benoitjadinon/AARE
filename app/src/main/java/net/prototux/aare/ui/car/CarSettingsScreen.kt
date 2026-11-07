@@ -36,7 +36,7 @@ import net.prototux.aare.ui.theme.LocalCarDimens
  * stays in AARE on the phone.
  */
 @Composable
-internal fun CarSettingsScreen(settings: Settings, modifier: Modifier) {
+internal fun CarSettingsScreen(settings: Settings, car: String, modifier: Modifier) {
     var theme by remember { mutableStateOf(settings.carTheme) }
     var rail by remember { mutableStateOf(settings.railPosition) }
     var style by remember { mutableStateOf(settings.carStyle) }
@@ -45,6 +45,7 @@ internal fun CarSettingsScreen(settings: Settings, modifier: Modifier) {
     var audio by remember { mutableStateOf(settings.carAudio) }
     var darkBar by remember { mutableStateOf(settings.darkBar) }
     var passenger by remember { mutableStateOf(settings.ignoreDriving) }
+    var touchSpace by remember { mutableStateOf(settings.touchSpace(car)) }
     LazyColumn(
         modifier.background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(horizontal = 32.dp, vertical = 24.dp),
@@ -71,6 +72,15 @@ internal fun CarSettingsScreen(settings: Settings, modifier: Modifier) {
         item { SwitchRow(stringResource(R.string.setup_switch_message_notifications), banners) { banners = it; settings.messageBanners = it } }
         item { SwitchRow(stringResource(R.string.msg_toggle_read_aloud_title), aloud) { aloud = it; settings.readMessagesAloud = it } }
         item { SwitchRow(stringResource(R.string.setup_switch_audio_next_connection), audio) { audio = it; settings.carAudio = it } }
+        item {
+            Choice(stringResource(R.string.setup_choice_touch_mapping), listOf(
+                Settings.TOUCH_AUTO to stringResource(R.string.setup_choice_touch_auto),
+                Settings.TOUCH_PANEL to stringResource(R.string.setup_choice_touch_panel),
+                Settings.TOUCH_SCREEN to stringResource(R.string.setup_choice_touch_screen),
+            ), touchSpace) {
+                touchSpace = it; settings.rememberTouchSpace(car, it)
+            }
+        }
     }
 }
 

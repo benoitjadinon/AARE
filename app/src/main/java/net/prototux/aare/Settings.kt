@@ -44,6 +44,34 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("prefer_60fps", true)
         set(v) = prefs.edit { putBoolean("prefer_60fps", v) }
 
+    /**
+     * How the head unit's touch reports are read: [TOUCH_AUTO] follows what its make is known to
+     * do, [TOUCH_PANEL] scales the touch panel it declares into the video frame, [TOUCH_SCREEN]
+     * treats them as pixels of the part of the video the car shows. Some cars (a Mustang Mach-E,
+     * and cars that reserve screen space for their own bars) report touches of the visible area
+     * while declaring a larger panel; taps then land short of where they were made.
+     */
+    var touchSpace: String
+        get() = prefs.getString("touch_space", TOUCH_AUTO) ?: TOUCH_AUTO
+        set(v) = prefs.edit { putString("touch_space", v) }
+
+    /** Touch spaces set for one car, by the name the head unit announces. */
+    private val touchSpaces: Map<String, String>
+        get() = prefs.getStringSet("touch_space_cars", emptySet()).orEmpty().mapNotNull { e ->
+            val i = e.lastIndexOf('\t')
+            if (i <= 0) null else e.substring(0, i) to e.substring(i + 1)
+        }.toMap()
+
+    /** The touch space to use with a car: its own if one was set, else the default. */
+    fun touchSpace(car: String): String = touchSpaces[car] ?: touchSpace
+
+    /** Remember how this car's touches are read; [TOUCH_AUTO] forgets the car's own setting. */
+    fun rememberTouchSpace(car: String, value: String) {
+        val cars = touchSpaces.toMutableMap()
+        if (value == TOUCH_AUTO || car.isBlank()) cars.remove(car) else cars[car] = value
+        prefs.edit { putStringSet("touch_space_cars", cars.map { (n, v) -> "$n\t$v" }.toSet()) }
+    }
+
     /** Where the car screen's bar goes: next to the driver ([RAIL_AUTO]), [RAIL_LEFT], [RAIL_RIGHT] or [RAIL_BOTTOM]. */
     var railPosition: String
         get() = prefs.getString("rail_position", null)
@@ -199,6 +227,9 @@ class Settings(context: Context) {
         const val THEME_LIGHT = "light"
         const val STYLE_AUTO = "auto"
         const val STYLE_CARPLAY = "carplay"
+        const val TOUCH_AUTO = "auto"
+        const val TOUCH_PANEL = "panel"
+        const val TOUCH_SCREEN = "screen"
         const val WALLPAPER_CUSTOM = "custom"
         /** The user's wallpaper photo, in the app's files. */
         const val WALLPAPER_FILE = "wallpaper.jpg"

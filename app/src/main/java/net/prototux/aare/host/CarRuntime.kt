@@ -630,7 +630,7 @@ class CarRuntime(
                             CarAppKind.MESSAGING -> MessagingScreen(app, ui.drivingRestricted, this, mod)
                             CarAppKind.PHONE_SCREEN -> MirrorScreen(this, ui.drivingRestricted, mod)
                             CarAppKind.PHONE -> PhoneScreen(this, mod)
-                            CarAppKind.SETTINGS -> CarSettingsScreen(settings, mod)
+                            CarAppKind.SETTINGS -> CarSettingsScreen(settings, ui.headUnitName, mod)
                             CarAppKind.NOTIFICATIONS -> NotificationsScreen(ui, mod)
                             else -> connection(app.id)?.let { CarAppScreen(it, this, mod) }
                         }

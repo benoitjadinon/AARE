@@ -366,6 +366,7 @@ private fun ConnectionSettings(settings: Settings) {
     var wireless by remember { mutableStateOf(settings.wireless) }
     var fps60 by remember { mutableStateOf(settings.prefer60fps) }
     var maxH by remember { mutableIntStateOf(settings.maxVideoHeight) }
+    var touchSpace by remember { mutableStateOf(settings.touchSpace) }
     var resume by remember { mutableStateOf(settings.resumeMedia) }
     var cars by remember { mutableStateOf(settings.knownCars) }
     var carGps by remember { mutableStateOf(settings.carGpsForPhone) }
@@ -393,6 +394,15 @@ private fun ConnectionSettings(settings: Settings) {
                 maxH = it.toInt(); settings.maxVideoHeight = maxH
             }
             Text(stringResource(R.string.setup_hint_lower_resolution), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Choices(stringResource(R.string.setup_choice_touch_mapping),
+                listOf(
+                    Settings.TOUCH_AUTO to stringResource(R.string.setup_choice_touch_auto),
+                    Settings.TOUCH_PANEL to stringResource(R.string.setup_choice_touch_panel),
+                    Settings.TOUCH_SCREEN to stringResource(R.string.setup_choice_touch_screen),
+                ), touchSpace) {
+                touchSpace = it; settings.touchSpace = it
+            }
+            Text(stringResource(R.string.setup_hint_touch_mapping), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Section(stringResource(R.string.setup_section_your_cars)) {
             if (cars.isEmpty()) Text(stringResource(R.string.setup_cars_empty), style = MaterialTheme.typography.bodyMedium)

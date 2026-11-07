@@ -170,7 +170,8 @@ class CarSession(
     override fun onServiceDiscovery(session: AapSession, response: ServiceDiscoveryResponse): List<ServiceChannel> {
         headUnitName = AapSession.describe(response).substringBefore(" [").ifBlank { response.displayName }
         CarData.discovered(response, owner = this)
-        touchInVisiblePixels = touchesInVisiblePixels(response)
+        resolvedTouchSpace = touchSpace(response)
+        touchInVisiblePixels = resolvedTouchSpace == Settings.TOUCH_SCREEN
         val rhd = response.driverPosition == DriverPosition.DRIVER_POSITION_RIGHT
         main.post {
             runtime.ui.headUnitName = response.displayName.ifBlank { headUnitName }
@@ -403,7 +404,7 @@ class CarSession(
             touchInVisiblePixels -> "${touchSize?.let { "${it.first}x${it.second}" }} declared, but this head unit reports touches in visible-area pixels"
             inputCh != null -> "${inputCh.first}x${inputCh.second}"
             else -> "not declared, using the visible area"
-        }} mapped into ${area.width}x${area.height} at +${area.left},+${area.top}")
+        }} mapped into ${area.width}x${area.height} at +${area.left},+${area.top} ($resolvedTouchSpace)")
     }
 
     private fun teardownVideo() {
@@ -416,6 +417,19 @@ class CarSession(
     @Volatile private var touchSize: Pair<Int, Int>? = null
     /** The head unit reports touches in pixels of the visible area, not of the panel it declares. */
     @Volatile private var touchInVisiblePixels = false
+    /** The touch space in use, after [Settings.TOUCH_AUTO] was resolved. */
+    @Volatile private var resolvedTouchSpace = Settings.TOUCH_AUTO
+
+    /**
+     * How this head unit's touches are read: the user's choice for this car, else a known quirk of
+     * its make, else the panel size it declares.
+     */
+    private fun touchSpace(r: ServiceDiscoveryResponse): String = settings.touchSpace(headUnitName).let { chosen ->
+        if (chosen != Settings.TOUCH_AUTO) chosen
+        else if (touchesInVisiblePixels(r)) Settings.TOUCH_SCREEN
+        else Settings.TOUCH_PANEL
+    }
+
     /** Input reports logged so far; the first few show how the car's touches map (#74). */
     private var loggedInputs = 0
 
@@ -679,9 +693,10 @@ class CarSession(
         const val KEYCODE_NAVIGATION = 65538
 
         /**
+         * Cars whose touches are known to be in visible-area pixels whatever panel they declare:
          * Ford SYNC 4 (Mustang Mach-E, #74) declares a 1200x1244 touch panel but reports touches
-         * in pixels of the 1042x1080 part of the video it shows: taps on its corners come in at
-         * about 1040x1080, and scaling them as panel coordinates put every tap ~13% short.
+         * in pixels of the 1042x1080 part of the video it shows, so scaling them as panel
+         * coordinates puts every tap ~13% short. Other cars can be set per car or in the settings.
          */
         internal fun touchesInVisiblePixels(r: ServiceDiscoveryResponse): Boolean {
             val hu = r.headunitInfo
